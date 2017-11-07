@@ -10,5 +10,6 @@ namespace wScriptTemplates
     {
         string Name { get; set; }
         List<string> ParameterNames { get; set; }
+        string Body { get; set; }
     }
 }

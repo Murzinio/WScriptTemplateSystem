@@ -31,7 +31,10 @@ namespace wScriptTemplates
         };
 
         private List<FunctionTemplate> m_functionTemplates = new List<FunctionTemplate>();
+        internal List<FunctionTemplate> FunctionTemplates { get => m_functionTemplates;}
+
         private List<FunctionSource> m_sourceFunctions = new List<FunctionSource>();
+        internal List<FunctionSource> SourceFunctions { get => m_sourceFunctions; }
 
         // function template call, like _g_hudMessage("string");
         // group1: function template name
@@ -97,9 +100,33 @@ namespace wScriptTemplates
                     parameters[i] = parameters[i].Remove(parameters[i].Length- 1);
                 }
 
-                m_functionTemplates.Add(
+                    int currentIndex = match.Index;
+                    char currentChar = file[currentIndex];
+
+                while (currentChar != '{')
+                {
+                    ++currentIndex;
+                    currentChar = file[currentIndex];
+                }
+
+                // skip opening brace
+                ++currentIndex;
+                currentChar = file[currentIndex];
+
+                string rawFunction = "";
+
+                while (currentChar != '}')
+                {
+                    rawFunction += currentChar;
+
+                    ++currentIndex;
+                    currentChar = file[currentIndex];
+                }
+
+                    m_functionTemplates.Add(
                 new FunctionTemplate(match.Groups[1].Value,
-                parameters));
+                parameters,
+                rawFunction));
             }
         }
 
@@ -141,10 +168,12 @@ namespace wScriptTemplates
                 }
 
                 // get template calls
-                var function = new FunctionSource();
+                
 
                 var callRegex = new Regex(m_functionTemplateCallPattern);
                 MatchCollection callMatches = Regex.Matches(file, m_functionTemplateCallPattern);
+
+                var calls = new List<FunctionTemplateCall>();
 
                 foreach (Match callMatch in callMatches)
                 {
@@ -166,10 +195,19 @@ namespace wScriptTemplates
                             new InvalidDataException("Template doesn't exist: " + templateName);
                     }
 
-                    function.TemplateCalls.Add(
+                    
+                   
+                    calls.Add(
                         new FunctionTemplateCall(templateName,
-                        callMatch.Groups[2].Value.Split(',').ToList()));
+                        callMatch.Groups[2].Value.Split(',').ToList())
+                    );
                 }
+                var function = 
+                    new FunctionSource(match.Groups[1].Value,
+                        new List<String>(),
+                        calls,
+                        rawFunction
+                    );
 
                 m_sourceFunctions.Add(function);
             }

@@ -22,6 +22,7 @@ namespace wScriptTemplates
         public static string[] SourceFilePaths { get => m_sourceFilePaths; }
 
         private static Parser m_parser = new Parser();
+        private static Generator m_generator = new Generator();
 
         static void Main(string[] args)
         {
@@ -30,7 +31,8 @@ namespace wScriptTemplates
                 return;
             }
 
-
+            m_generator.generate(m_parser.FunctionTemplates,
+                m_parser.SourceFunctions);
         }
 
         /// <summary>
